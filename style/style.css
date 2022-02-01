@@ -96,3 +96,7 @@ label span {
     -webkit-text-stroke-width: 2px;
     -webkit-text-stroke-color: black; 
 }
+
+.btn--hidden{
+    display: none;
+}

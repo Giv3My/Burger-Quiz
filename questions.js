@@ -87,10 +87,10 @@ const getData = () => {
 
 const obj = {};
 
-const inputs = [...formAnswers.elements].filter(elem => elem.checked);
+const inputs = [...formAnswers.elements]
+    .filter(elem => elem.checked)
 
 inputs.forEach((elem, index) => {
     obj[`${index}_${questions[numberQuestion].question}`] = elem.value;
 })
-
 finalAnswers.push(obj)
