@@ -1,3 +1,20 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.5/firebase-app.js";
+import { getDatabase, ref, child, get, set } from "https://www.gstatic.com/firebasejs/9.6.5/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBlihMgdgMd2nOObXyXl4_LvtfKgaelT-0",
+    authDomain: "testburger-7337e.firebaseapp.com",
+    databaseURL: "https://testburger-7337e-default-rtdb.firebaseio.com",
+    projectId: "testburger-7337e",
+    storageBucket: "testburger-7337e.appspot.com",
+    messagingSenderId: "242452772631",
+    appId: "1:242452772631:web:a58a96571db045ffbfa952",
+    measurementId: "G-1XPR13JP89"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase();
+
 document.addEventListener("DOMContentLoaded", function () {
 
     const btnOpenModal = document.querySelector('#btnOpenModal');
@@ -9,92 +26,39 @@ document.addEventListener("DOMContentLoaded", function () {
     const prevButton = document.querySelector('#prev');
     const sendButton = document.querySelector('#send');
 
-    const questions = [
-        {
-            question: "Какого цвета бургер?",
-            answers: [
-                {
-                    title: 'Стандарт',
-                    url: './image/burger.png'
-                },
-                {
-                    title: 'Черный',
-                    url: './image/burgerBlack.png'
+    const getData = () => {
+        formAnswers.textContent = 'LOAD';
+        prevButton.classList.add('d-none');
+        nextButton.classList.add('d-none');
+
+        setTimeout(() => {
+            const dbRef = ref(getDatabase());
+
+            get(child(dbRef, 'questions')).then((snapshot) => {
+                if (snapshot.exists()) {
+                    playTest(snapshot.val());
+                    // console.log(snapshot.val());
+                } else {
+                    formAnswers.textContent = 'Ошибка загрузки данных!';
+                    console.log("No data available");
                 }
-            ],
-            type: 'radio'
-        },
-        {
-            question: "Из какого мяса котлета?",
-            answers: [
-                {
-                    title: 'Курица',
-                    url: './image/chickenMeat.png'
-                },
-                {
-                    title: 'Говядина',
-                    url: './image/beefMeat.png'
-                },
-                {
-                    title: 'Свинина',
-                    url: './image/porkMeat.png'
-                }
-            ],
-            type: 'radio'
-        },
-        {
-            question: "Дополнительные ингредиенты?",
-            answers: [
-                {
-                    title: 'Помидор',
-                    url: './image/tomato.png'
-                },
-                {
-                    title: 'Огурец',
-                    url: './image/cucumber.png'
-                },
-                {
-                    title: 'Салат',
-                    url: './image/salad.png'
-                },
-                {
-                    title: 'Лук',
-                    url: './image/onion.png'
-                }
-            ],
-            type: 'checkbox'
-        },
-        {
-            question: "Добавить соус?",
-            answers: [
-                {
-                    title: 'Чесночный',
-                    url: './image/sauce1.png'
-                },
-                {
-                    title: 'Томатный',
-                    url: './image/sauce2.png'
-                },
-                {
-                    title: 'Горчичный',
-                    url: './image/sauce3.png'
-                }
-            ],
-            type: 'radio'
-        }
-    ];
+            }).catch((error) => {
+                console.error(error);
+            });
+        }, 500);
+    }
 
     btnOpenModal.addEventListener("click", () => {
         modalBlock.classList.add('d-block');
 
-        playTest();
+        getData();
     })
 
     closeModal.addEventListener("click", () => {
         modalBlock.classList.remove('d-block');
     })
 
-    const playTest = () => {
+    const playTest = (questions) => {
         const finalAnswers = [];
         let numberQuestion = 0;
 
@@ -121,6 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
             switch (true) {
                 case numberQuestion === 0:
                     prevButton.classList.add('d-none');
+                    nextButton.classList.remove('d-none');
                     break;
                 case numberQuestion <= questions.length - 1:
                     prevButton.classList.remove('d-none');
@@ -195,6 +160,10 @@ document.addEventListener("DOMContentLoaded", function () {
         sendButton.addEventListener('click', () => {
             checkAnswer();
             numberQuestion++;
+
+            set(ref(db, 'contacts'), {
+                ...finalAnswers
+            });
 
             renderQuestions(numberQuestion);
         })
